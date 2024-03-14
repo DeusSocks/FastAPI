@@ -1,31 +1,46 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+import json
+from fastapi.responses import HTMLResponse
 
 app = FastAPI() # <- Создаем экземпляр класса FastAPI
 templates = Jinja2Templates(directory="templates")
 
-@app.get("/") # <- декоратор, который обрабатывает get - запросы где маршрут
-def index(request: Request):
-    return templates.TemplateResponse(request=request, name='index.html')
+def database(name_db, mode, data=None):
+    if mode == 'r':
+        with open(name_db, mode, encoding='utf-8') as db:
+            return json.load(db)
+    elif mode == 'r+':
+        with open(name_db, mode, encoding='utf-8') as db:
+            json.dump(data, db)
+            
 
-class Item(BaseModel):
-    login: str
-    password: str
+@app.get("/tasks/")
+def get_tasks(request:Request):
+    data = database('database.json', 'r')
+    
+    return templates.TemplateResponse(request=request, name='task_list.html', context=data)
 
-@app.post('/')
-def index_post(request:Request, item:Item):
-    print(item)
-    return templates.TemplateResponse(request=request, name='index.html', context=item)
+class Task(BaseModel):
+    title:str
+    description:str
 
-@app.get("/login/") # <- декоратор, который обрабатывает get - запросы где маршрут
-def login(request:Request):
-    return templates.TemplateResponse(request=request, name="login.html") 
-
-@app.get("/tasks/") # <- декоратор, который обрабатывает get - запросы где маршрут
-def tasks(request:Request):
-    context = {"task": "Купить молоко"}
-    return templates.TemplateResponse(request=request, name="tasks.html", context=context)
+@app.post("/tasks/")
+def post_task(request:Request, task:Task):
+    title = task.title
+    desc = task.description
+    dikt = {"title":title, "description": desc}
+    print(dikt)
+    with open('database.json', 'r+', encoding='utf-8') as db:
+        data = json.loads(db.read())
+        
+        data.tasks.append(dikt)
+        print(data)
+        json.dumps(data)
+        json.dump(data, db)
+    return templates.TemplateResponse(request=request, name='task_list.html', context=data)
+        
 
 # uvicorn main:app --reload
 # python -m venv venv

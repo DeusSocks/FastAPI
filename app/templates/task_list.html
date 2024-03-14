@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+</head>
+<body>
+    Задачи:{% for task in tasks %}
+                {{task.title}}
+                {{task.description}}
+            {% endfor %}
+    <form id="taskForm" method="post">
+        <label for="title">Название задачи:</label>
+        <input type="text" id="title" name="title">
+        <p></p>
+        <label for="description">Описание задачи:</label>
+        <input type="text" id="description" name="description">
+        <p></p>
+        <button id="btnTaskForm">Добавить задачу</button>
+    </form>
+    <script>
+
+        let taskForm = document.getElementById('taskForm');
+        taskForm.addEventListener('submit', function(event){
+            event.preventDefault();
+            let title = document.getElementById('title');
+            let description = document.getElementById('description');
+            const data = {"title": title.value, "description":description.value}
+            
+            fetch('http://127.0.0.1:8000/tasks/',{
+                method:"POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+        });
+
+    </script>
+</body>
+</html>
