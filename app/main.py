@@ -30,15 +30,15 @@ class Task(BaseModel):
 def post_task(request:Request, task:Task):
     title = task.title
     desc = task.description
-    dikt = {"title":title, "description": desc}
-    print(dikt)
-    with open('database.json', 'r+', encoding='utf-8') as db:
-        data = json.loads(db.read())
-        
-        data.tasks.append(dikt)
+    dict_copy = {"title":title, "description": desc}
+    print(dict_copy)
+    with open('database.json', 'r', encoding='utf-8') as db:
+        data = json.load(db)
+        data["tasks"].append(dict_copy)
         print(data)
-        json.dumps(data)
-        json.dump(data, db)
+        with open('database.json', 'w', encoding='utf-8') as db_clear:
+            #json.dumps(data)
+            json.dump(data, db_clear, indent=4, ensure_ascii=False)
     return templates.TemplateResponse(request=request, name='task_list.html', context=data)
         
 
